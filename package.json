@@ -1,7 +1,7 @@
 {
   "name": "embedified",
-  "version": "1.0.1",
-  "description": "Extremely lightweight NPM package which allows you to easily create embeds",
+  "version": "1.0.2",
+  "description": "Easily create Discord.js compatible embeds with an intuitive HTML-like syntax.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -9,6 +9,10 @@
     "test": "node test/index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "lqvers",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "discord.js": "^14.11.0"
+  }
 }

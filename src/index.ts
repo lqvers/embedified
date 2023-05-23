@@ -1,79 +1,77 @@
-export class EmbedBuilder {
-  private title?: string;
-  private description?: string;
-  private color?: string;
-  private author?: {
-    name?: string;
-    icon_url?: string;
-  };
-  private fields?: {
-    name: string;
-    value: string;
-    inline?: boolean;
-  }[];
-  private footer?: {
-    text?: string;
-    icon_url?: string;
-  };
+import cheerio from 'cheerio';
+import { EmbedBuilder } from 'discord.js';
 
-  public setTitle(title: string): EmbedBuilder {
-    this.title = title;
-    return this;
+export class Embed {
+  private html: string;
+
+  constructor(html: string) {
+    this.html = html;
   }
 
-  public setDescription(description: string): EmbedBuilder {
-    this.description = description;
-    return this;
-  }
+  public build(): any {
+    const $ = cheerio.load(this.html);
 
-  public setColor(color: string): EmbedBuilder {
-    this.color = color;
-    return this;
-  }
+    let data: any = {
+      title: $('title').text(),
+      description: $('description').text(),
+      color: $('color').text(),
+      fields: [],
+      footer: {
+        text: $('footer').attr('text'),
+        iconURL: $('footer').attr('icon'),
+      },
+      author: {
+        name: $('author').attr('name'),
+        iconURL: $('author').attr('icon'),
+        url: $('author').attr('url'),
+      },
+      thumbnail: $('thumbnail').text(),
+      image: $('image').text(),
+      timestamp: $('timestamp').text() === 'true',
+    };
 
-  public setAuthor({ name, iconUrl }: { name: string; iconUrl?: string }): EmbedBuilder {
-    this.author = { name, icon_url: iconUrl };
-    return this;
-  }
+    $('field').each((index, element) => {
+      const name: any = $(element).attr('name');
+      const value: any = $(element).attr('value');
+      const inline: any = $(element).attr('inline') ? $(element).attr('inline') === 'true' : false;
 
-  public addFields(fields: { name: string; value: string; inline?: boolean }[]): EmbedBuilder {
-    if (!this.fields) {
-      this.fields = [];
-    }
-    this.fields.push(...fields);
-    return this;
-  }
+      data.fields.push({ name, value, inline });
+    });
 
-  public setFooter({ text, iconUrl }: { text: string; iconUrl?: string }): EmbedBuilder {
-    this.footer = { text, icon_url: iconUrl };
-    return this;
-  }
+    let embed = new EmbedBuilder();
+    embed.setTitle(data.title);
+    embed.setDescription(data.description);
+    embed.setColor(data.color);
+    embed.setFooter({ text: data.footer.text });
 
-  public toJSON(): any {
-    const embed: any = {};
-
-    if (this.title) {
-      embed.title = this.title;
-    }
-
-    if (this.description) {
-      embed.description = this.description;
-    }
-
-    if (this.color) {
-      embed.color = this.color;
+    if (data.footer.iconURL !== undefined) {
+      embed.setFooter({ text: data.footer.text, iconURL: data.footer.iconURL });
     }
 
-    if (this.author) {
-      embed.author = this.author;
+    data.fields.forEach((x: any) => {
+      embed.addFields(x);
+    });
+
+    if (data.author.name !== undefined) {
+      embed.setAuthor({ name: data.author.name });
+      if (data.author.iconURL !== undefined) {
+        embed.setAuthor({ name: data.author.name, iconURL: data.author.iconURL });
+      }
+      if (data.author.url !== undefined) {
+        embed.setAuthor({ name: data.author.name, iconURL: data.author.iconURL, url: data.author.url });
+      }
     }
 
-    if (this.fields && this.fields.length > 0) {
-      embed.fields = this.fields;
+    if (data.thumbnail !== '') {
+      embed.setThumbnail(data.thumbnail);
     }
 
-    if (this.footer) {
-      embed.footer = this.footer;
+    if (data.image !== '') {
+      embed.setImage(data.image);
+    }
+
+    if (data.timestamp) {
+      embed.setTimestamp();
     }
 
     return embed;
