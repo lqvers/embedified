@@ -1,0 +1,14 @@
+{
+  "name": "embedified",
+  "version": "1.0.1",
+  "description": "Extremely lightweight NPM package which allows you to easily create embeds",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node test/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
